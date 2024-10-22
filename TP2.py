@@ -2,7 +2,9 @@ import csv
 import random
 import string
 
+#ajouter l'entete du nombre de candidats et d'electeurs
 def generate_election_csv(filename, num_voters, num_candidates):
+    
     # Générer les noms des candidats (A, B, C, ...)
     candidates = list(string.ascii_uppercase[:num_candidates])
     
@@ -21,6 +23,8 @@ def generate_election_csv(filename, num_voters, num_candidates):
         writer.writerows(data)
 
 # Générer un fichier CSV avec 10 électeurs et 5 candidats
+
+#rendre les inputs variables
 generate_election_csv('election_data.csv', 10, 5)
 
 def lire_donnees_csv(nom_fichier):
@@ -116,5 +120,6 @@ preferences = lire_donnees_csv('election_data.csv')
 
 print("Résultat Vote Un Tour:", VoteUnTour(preferences))
 print("Résultat Vote Deux Tours:", VoteDeuxTours(preferences))
+#Modifier si le resultat = none
 print("Résultat Vote Condorcet:", VoteCondorcet(preferences))
 print("Résultat Vote Borda:", VoteBorda(preferences))
