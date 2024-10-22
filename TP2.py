@@ -9,7 +9,7 @@ def generate_election_csv(filename, num_voters, num_candidates):
     candidates = list(string.ascii_uppercase[:num_candidates])
     
     # Créer les données pour le fichier CSV
-    data = [['Voter'] + candidates]  # En-tête
+    data = [['Voter'] + candidates + [f"Nombre d'élécteurs: {num_voters}", f"Nombre de candidats: {num_candidates}"]] # En-tête
     
     for i in range(1, num_voters + 1):
         voter_id = f"Voter_{i}"
@@ -94,7 +94,7 @@ def VoteCondorcet(preferences):
         if all(duels.get((candidat, autre), 0) > duels.get((autre, candidat), 0) 
                for autre in candidats if autre != candidat):
             return candidat
-    return None  # Pas de vainqueur de Condorcet
+    return "Il n'y a pas de vainqueur de Condorcet."
 
 def VoteBorda(preferences):
     scores = {}
