@@ -3,7 +3,6 @@ import csv
 import random
 import string
 
-#ajouter l'entete du nombre de candidats et d'electeurs
 def generate_election_csv(filename, num_voters, num_candidates):
     
     # Générer les noms des candidats (A, B, C, ...)
@@ -23,7 +22,8 @@ def generate_election_csv(filename, num_voters, num_candidates):
         writer = csv.writer(file)
         writer.writerows(data)
 
-# Générer un fichier CSV avec 10 électeurs et 5 candidats
+
+
 
 #rendre les inputs variables
 generate_election_csv('election_data.csv', 10, 5)
@@ -128,20 +128,64 @@ print("Résultat Vote Borda:", VoteBorda(preferences))
 
 
 
-# Fonction pour vérifier les conditions avec retour des pourcentages
-from collections import Counter
+def generate_election_csv2(filename, num_voters, num_candidates, unique_percentage=0.2, num_distinct_repeated=5):
+    """
+    Génère un fichier CSV avec des préférences où `unique_percentage` (par défaut 20%) sont uniques, 
+    et le reste est composé de préférences distinctes répétées.
+    
+    - unique_percentage : proportion de préférences uniques (entre 0 et 1).
+    - num_distinct_repeated : nombre de préférences distinctes pour les 80 % répétées.
+    """
+    # Générer les noms des candidats (A, B, C, ...)
+    candidates = list(string.ascii_uppercase[:num_candidates])
+    
+    # Calculer le nombre de préférences uniques et répétées
+    num_unique_preferences = int(num_voters * unique_percentage)
+    num_repeated_preferences = num_voters - num_unique_preferences
+
+    # Générer les préférences uniques pour les 20% des électeurs
+    unique_preferences = [random.sample(candidates, len(candidates)) for _ in range(num_unique_preferences)]
+    
+    # Générer plusieurs préférences distinctes pour les 80% restants, sans chevauchement avec les uniques
+    distinct_repeated_preferences = []
+    while len(distinct_repeated_preferences) < num_distinct_repeated:
+        new_preference = random.sample(candidates, len(candidates))
+        if new_preference not in unique_preferences and new_preference not in distinct_repeated_preferences:
+            distinct_repeated_preferences.append(new_preference)
+    
+    # Répartir ces préférences pour atteindre 80% du total
+    repeated_preferences = [random.choice(distinct_repeated_preferences) for _ in range(num_repeated_preferences)]
+    
+    # Combiner les deux ensembles
+    all_preferences = unique_preferences + repeated_preferences
+    random.shuffle(all_preferences)  # Mélanger pour répartir aléatoirement les préférences
+    
+    # Créer les données pour le fichier CSV avec l'en-tête
+    data = [['Voter'] + candidates + [f"Nombre d'élécteurs: {num_voters}", f"Nombre de candidats: {num_candidates}"]]
+    
+    # Ajouter les préférences pour chaque électeur
+    for i in range(num_voters):
+        voter_id = f"Voter_{i + 1}"
+        preferences = all_preferences[i]
+        data.append([voter_id] + preferences)
+    
+    # Écrire les données dans le fichier CSV
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(data)
+
+
 
 def verifier_conditions(preferences):
     num_voters = len(preferences)
     preferences_list = list(preferences.values())
     
-    different_preferences_count = 0  # Compteur de préférences différentes
-    unique_preferences = []  # Stocker uniquement les préférences uniques
+    # Première condition : Calcul des préférences différentes
+    different_preferences_count = 0
+    unique_preferences = []
     
-    # Parcourir chaque préférence pour identifier les uniques
     for i, preference in enumerate(preferences_list):
         is_unique = True  # Indicateur pour vérifier si la préférence est unique
-        
         # Comparer cette préférence avec toutes les autres
         for j, other_preference in enumerate(preferences_list):
             if i != j and preference == other_preference:
@@ -152,25 +196,17 @@ def verifier_conditions(preferences):
         if is_unique:
             different_preferences_count += 1
             unique_preferences.append(preference)  # Ajouter la préférence unique à la liste
-            
+    
     # Calcul du pourcentage de préférences différentes
     percent_different_preferences = (different_preferences_count / num_voters) * 100
     
-    # Calcul du pourcentage de candidats en tête différents parmi les préférences uniques
-    # Extraire les premiers choix des préférences uniques
-    unique_heads = [pref[0] for pref in unique_preferences]
-    
-    # Compter la fréquence de chaque premier choix
-    head_counts = Counter(unique_heads)
-    most_common_head_count = head_counts.most_common(1)[0][1]  # Compte du candidat en tête le plus fréquent
-    
-    # Calculer le nombre de candidats en tête différents des plus fréquents
-    different_head_count = sum(count for candidate, count in head_counts.items() if count < most_common_head_count)
-    
-    # Calcul du pourcentage de candidats en tête différents
-    percent_different_head = (different_head_count / len(unique_preferences)) * 100 if len(unique_preferences) > 0 else 0
+    # Deuxième condition : Calcul des candidats en tête différents parmi les préférences uniques
+    unique_heads = [pref[0] for pref in unique_preferences]  # Extraire le premier choix de chaque préférence unique
+    unique_heads_count = len(set(unique_heads))  # Compter les candidats en tête différents
+    percent_different_head = (unique_heads_count / len(unique_heads)) * 100 if len(unique_heads) > 0 else 0
     
     return percent_different_preferences, percent_different_head
+
 
 
 # Fonction principale pour générer l'élection et trouver un vainqueur unique
@@ -180,7 +216,7 @@ def trouver_election_avec_vainqueur_unique(filename, num_voters, num_candidates)
         iteration_count += 1
         
         # Générer le fichier CSV avec des préférences aléatoires
-        generate_election_csv(filename, num_voters, num_candidates)
+        generate_election_csv2(filename, num_voters, num_candidates)
         
         # Lire les préférences
         preferences = lire_donnees_csv(filename)
@@ -203,8 +239,8 @@ def trouver_election_avec_vainqueur_unique(filename, num_voters, num_candidates)
 
 # Exemple d'utilisation pour la question 5
 filename = 'election_data_question5.csv'
-num_voters = 100
-num_candidates = 7
+num_voters = 70
+num_candidates = 10
 
 # Appeler la fonction pour trouver une élection avec un vainqueur unique
 preferences, gagnant_unique, percent_different_preferences, percent_different_head, iteration_count = trouver_election_avec_vainqueur_unique(filename, num_voters, num_candidates)
@@ -234,7 +270,7 @@ def trouver_election_avec_vainqueurs_differents(filename, num_voters, num_candid
         iteration_count += 1
         
         # Générer le fichier CSV avec des préférences aléatoires
-        generate_election_csv(filename, num_voters, num_candidates)
+        generate_election_csv2(filename, num_voters, num_candidates)
         
         # Lire les préférences
         preferences = lire_donnees_csv(filename)
@@ -266,8 +302,8 @@ def trouver_election_avec_vainqueurs_differents(filename, num_voters, num_candid
 
 # Exemple d'utilisation pour la question 6
 filename = 'election_data_question6.csv'
-num_voters = 100
-num_candidates = 7
+num_voters = 70
+num_candidates = 12
 
 preferences, gagnant_un_tour, gagnant_deux_tours, gagnant_condorcet, gagnant_borda, percent_different_preferences, percent_different_head, iteration_count = trouver_election_avec_vainqueurs_differents(filename, num_voters, num_candidates)
 
