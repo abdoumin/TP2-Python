@@ -25,7 +25,7 @@ def generate_election_csv(filename, num_voters, num_candidates):
 
 
 
-#rendre les inputs variables
+
 generate_election_csv('election_data.csv', 10, 5)
 
 def lire_donnees_csv(nom_fichier):
@@ -248,7 +248,6 @@ preferences, gagnant_unique, percent_different_preferences, percent_different_he
 # Afficher les résultats
 
 
-
 print(f"\nRésultat Vote Un Tour: {gagnant_unique}")
 print(f"Résultat Vote Deux Tours: {gagnant_unique}")
 print(f"Résultat Vote Condorcet: {gagnant_unique}")
@@ -260,7 +259,6 @@ print(f"Le vainqueur commun de toutes les méthodes est : {gagnant_unique}")
 print(f"Pourcentage de préférences différentes: {percent_different_preferences:.2f}%")
 print(f"Pourcentage de préférences avec un candidat différent en tête: {percent_different_head:.2f}%")
 print(f"Nombre d'itérations avant de trouver une élection valide : {iteration_count}")
-
 
 
 # Fonction principale pour générer l'élection et trouver des vainqueurs différents
